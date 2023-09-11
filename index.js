@@ -23,9 +23,15 @@ nlpManager.addDocument("en", "What is the weather like today?", "weather.today")
 nlpManager.addDocument("en", "Tell me a joke", "bot.joke");
 
 // Train the NLP manager
-nlpManager.train();
+async function trainNlpManager() {
+  await nlpManager.train();
+}
 
-async function start() {
+trainNlpManager().then(() => {
+  startBot();
+});
+
+function startBot() {
   const bot = new Bot(botToken);
   bot.use(autoQuote);
 
@@ -110,10 +116,5 @@ async function start() {
   });
 
   console.log("Starting the bot...");
-  await bot.start();
+  bot.start();
 }
-
-start().catch((error) => {
-  console.error("Error occurred during bot startup:", error);
-  process.exit(1);
-});
