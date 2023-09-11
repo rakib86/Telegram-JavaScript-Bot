@@ -1,7 +1,6 @@
 const TelegramBot = require('node-telegram-bot-api');
-const axios = require('axios');
 
-// Replace with your Telegram Bot API token (already added to Railway environment variables)
+// Replace with your Telegram Bot API token (added to Railway environment variables)
 const apiToken = process.env.TELEGRAM_API_TOKEN;
 
 // Create a new instance of the Telegram Bot
@@ -34,7 +33,7 @@ bot.on('message', (msg) => {
     },
   ];
 
-  // Check user intent and provide appropriate response
+  // Check user intent and provide an appropriate response
   let recognizedIntent = false;
 
   for (const intent of intents) {
@@ -57,4 +56,18 @@ bot.on('message', (msg) => {
   }
 });
 
-// No need to set up the webhook here if the API token is added to Railway environment variables
+// Start listening for messages
+bot.onText(/\/start/, (msg) => {
+  const chatId = msg.chat.id;
+  bot.sendMessage(chatId, 'Welcome to the Telegram Bot! Send me a command to get started.');
+});
+
+// Handle errors
+bot.on('polling_error', (error) => {
+  console.error('Polling error:', error);
+});
+
+// Log when the bot is ready
+bot.on('polling', () => {
+  console.log('Bot is polling for messages...');
+});
