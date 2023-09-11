@@ -1,40 +1,77 @@
-const TelegramBot = require('node-telegram-bot-api');
-require('dotenv').config(); // Load environment variables
+const { Bot, GrammyError, HttpError } = require("grammy");
+const { autoQuote } = require("@roziscoding/grammy-autoquote");
+const fs = require("fs");
+const path = require("path");
 
-// Get your bot token from the environment variable
+if (fs.existsSync(".env")) {
+  require("dotenv").config();
+}
+
 const botToken = process.env.BOT_TOKEN;
-
 if (!botToken) {
   throw new Error("BOT_TOKEN is not set in environment variables! Exiting...");
 }
 
-const bot = new TelegramBot(botToken, { polling: true });
+async function start() {
+  const bot = new Bot(botToken);
+  bot.use(autoQuote);
 
-// Define intent words and their corresponding responses
-const intents = {
-  'hello': 'Hello! How can I assist you today?',
-  'howareyou': "I'm just a bot, but thanks for asking!",
-  'goodbye': 'Goodbye! Have a great day!',
-};
+  const commandFilesDir = path.resolve(__dirname, "commands");
+  const commandFiles = fs
+    .readdirSync(commandFilesDir)
+    .filter((file) => file.endsWith(".js"));
 
-// Listen for incoming messages
-bot.on('message', (msg) => {
-  const chatId = msg.chat.id;
-  const text = msg.text.toLowerCase(); // Convert the message to lowercase for case-insensitivity
+  for (const file of commandFiles) {
+    const command = require(path.join(commandFilesDir, file));
+    bot.command(command.name, async (ctx) => {
+      await command.handler(ctx);
+    });
 
-  // Check for intent words and respond accordingly
-  for (const intent in intents) {
-    if (text.includes(intent)) {
-      bot.sendMessage(chatId, intents[intent]);
-      return; // Exit the loop once a response is sent
+    if (command.alias) {
+      for (const alias of command.alias) {
+        bot.command(alias, async (ctx) => {
+          await command.handler(ctx);
+        });
+      }
     }
   }
 
-  // If no intent word is found, provide a default response
-  bot.sendMessage(chatId, 'I did not understand your request. Try a different word or phrase.');
-});
+  bot.command("start", (ctx) =>
+    ctx.reply("Hello!\n\n" + "Run the /help command to see what I can do!")
+  );
 
-// Handle errors
-bot.on('polling_error', (error) => {
-  console.error(error);
+  bot.catch((err) => {
+    const ctx = err.ctx;
+    console.error(`Error while handling update ${ctx.update.update_id}:`);
+    const e = err.error;
+    if (e instanceof GrammyError) {
+      console.error("Error in request:", e.description);
+    } else if (e instanceof HttpError) {
+      console.error("Could not contact Telegram:", e);
+    } else {
+      console.error("Unknown error:", e);
+    }
+  });
+
+  process.on("uncaughtException", (err) => {
+    console.error(err);
+  });
+
+  process.on("unhandledRejection", (err) => {
+    console.error(err);
+  });
+
+  process.on("SIGINT", () => {
+    console.log("Stopping...");
+    bot.stop();
+    process.exit(0);
+  });
+
+  console.log("Starting the bot...");
+  await bot.start();
+}
+
+start().catch((error) => {
+  console.error("Error occurred during bot startup:", error);
+  process.exit(1);
 });
