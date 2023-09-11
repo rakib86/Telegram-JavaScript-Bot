@@ -14,6 +14,7 @@
     "axios": "^1.4.0",
     "dotenv": "^16.3.1",
     "grammy": "^1.17.2",
+    "node-nlp": "^4.27.0",
     "path": "^0.12.7"
   },
   "packageManager": "yarn@3.6.1"
