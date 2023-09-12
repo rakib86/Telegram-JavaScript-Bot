@@ -1,22 +1,6 @@
 {
-  "name": "telegram-javascript-bot",
-  "version": "1.0.0",
-  "description": "A template for Telegram bot in JavaScript using grammY",
-  "main": "index.js",
-  "repository": "https://github.com/agam778/Telegram-JavaScript-Bot.git",
-  "author": "Agampreet Singh <68941022+agam778@users.noreply.github.com>",
-  "license": "MIT",
-  "scripts": {
-    "start": "node index.js"
-  },
   "dependencies": {
-    "@roziscoding/grammy-autoquote": "^1.1.2",
-    "axios": "^1.4.0",
-    "dotenv": "^16.3.1",
-    "grammy": "^1.17.2",
     "natural": "^6.7.2",
-    "node-nlp": "^3.10.2",
-    "path": "^0.12.7"
-  },
-  "packageManager": "yarn@3.6.1"
+    "node-telegram-bot-api": "^0.63.0"
+  }
 }
